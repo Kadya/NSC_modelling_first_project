@@ -154,9 +154,8 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
 
     pos = initial + 1e-4 * np.random.randn(nwalkers, ndim)
     # nwalkers, ndim = pos.shape
-
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability,
-                                    args=(M_NSC, e_M_NSC, M_GCS, e_M_GCS, galaxy))
+                                    args=(M_NSC, e_M_NSC, M_GCS, e_M_GCS, galaxy, file, mass_uncertainty))
     sampler.run_mcmc(pos, steps)
     print('Walkers: {0}'.format(nwalkers))
     print('Steps: {0}'.format(steps))

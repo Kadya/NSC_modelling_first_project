@@ -31,20 +31,22 @@ def convert_to_log(val, e_val):
     return log_val, log_e_val
 
 
-def do_for_galaxy(galaxy, redo=False, file='../Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000):
+def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000):
     if os.path.isfile('./Results/{0}_results{1}.dat'.format(galaxy, prefix)) and not redo:
         print('done already')
-        # return 0
+
+        return 0
     # try:
     # if 1 = 1
     tab = ascii.read(file)
 
     gal = tab[tab['galaxy'] == galaxy]
-
+    print(file)
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
     do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
                          np.log10(gal['M_GCS']), mass_uncertainty,
                          galaxy=galaxy, file=file, prefix=prefix, steps=steps)
+
     # except:
     ##    print('Did not work for {0}'.format(galaxy))
     # return 0
@@ -54,17 +56,17 @@ if __name__ == "__main__":
     plt.close('all')
 
     #galaxy = 'FCC204'
-    tab = ascii.read('../Data/Cote2006_NSCs_Virgo.txt')
+    tab = ascii.read('./Data/Cote2006_NSCs_Virgo.txt')
     # for galaxy in tab['Name']:
     #    do_for_galaxy(galaxy)
     #    plt.close()
-
-    do_for_galaxy('FCC47', redo=False, file='../Preparation/ACSFCS_sample_2nd_brightest.dat',
-                  prefix='_2nd_brightest')
-    ##tab = ascii.read('../Data/Turner2012_NSCs_Fornax.txt')
-    # for galaxy in tab['Name']:
-    #    do_for_galaxy(galaxy)
-    #    plt.close()
+    #plt.show()
+    #do_for_galaxy('FCC47', redo=True, file='./Data/ACSFCS_sample_2nd_brightest.dat',
+    #              prefix='_2nd_brightest', steps=1000)
+    #tab = ascii.read('./Data/Turner2012_NSCs_Fornax.txt')
+    for galaxy in tab['Name']:
+        do_for_galaxy(galaxy, file='./Data/ACSVCS_sample_2nd_brightest.dat',  prefix='_2nd_brightest', steps=1000)
+        plt.close("all")
 
     # FCC204
     # FCC335
