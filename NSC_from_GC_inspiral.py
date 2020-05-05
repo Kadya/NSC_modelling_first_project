@@ -8,6 +8,7 @@ from astropy.io import ascii  # for table handling
 from MCMC_inspiral_log import do_the_modelling as do_the_modelling_log
 from MCMC_inspiral_log import log_likelihood
 import os
+import time
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -31,7 +32,7 @@ def convert_to_log(val, e_val):
     return log_val, log_e_val
 
 
-def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000):
+def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000, parallel=False):
     if os.path.isfile('./Results/{0}_results{1}.dat'.format(galaxy, prefix)) and not redo:
         print('done already')
 
@@ -45,11 +46,18 @@ def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_unce
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
     do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
                          np.log10(gal['M_GCS']), mass_uncertainty,
-                         galaxy=galaxy, file=file, prefix=prefix, steps=steps)
+                         galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel)
 
     # except:
     ##    print('Did not work for {0}'.format(galaxy))
     # return 0
+
+def convert_seconds(t):
+    hours = int(t/3600)
+    minutes = int((t-hours*3600)/60)
+    seconds = (t - hours*3600 - minutes*60)
+    string = "{0} h {1} m {2:.2f} s".format(hours, minutes, seconds)
+    return string
 
 
 if __name__ == "__main__":
@@ -61,12 +69,25 @@ if __name__ == "__main__":
     #    do_for_galaxy(galaxy)
     #    plt.close()
     #plt.show()
-    #do_for_galaxy('FCC47', redo=True, file='./Data/ACSFCS_sample_2nd_brightest.dat',
-    #              prefix='_2nd_brightest', steps=1000)
+    start = time.time()
     #tab = ascii.read('./Data/Turner2012_NSCs_Fornax.txt')
     for galaxy in tab['Name']:
-        do_for_galaxy(galaxy, file='./Data/ACSVCS_sample_2nd_brightest.dat',  prefix='_2nd_brightest', steps=1000)
-        plt.close("all")
+        if galaxy != 'FCC95':
+            start_i = time.time()
+            do_for_galaxy(galaxy, file='./Data/ACSVCS_sample.dat',  prefix='_M_GC_max', steps=1000, parallel=1, redo=0)
+            plt.close("all")
+            end_i = time.time()
+            duration_i = end_i-start_i
+            print('This took {0}'.format( convert_seconds(duration_i)))
+    end_i = time.time()
+    duration_i = end_i-start
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    print('This took {0}'.format( convert_seconds(duration_i)))
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    #tab = ascii.read('./Data/Turner2012_NSCs_Fornax.txt')
+    #for galaxy in tab['Name']:
+    #    do_for_galaxy(galaxy, file='./Data/ACSVCS_sample_2nd_brightest.dat',  prefix='_2nd_brightest', steps=1000)
+    #    plt.close("all")
 
     # FCC204
     # FCC335

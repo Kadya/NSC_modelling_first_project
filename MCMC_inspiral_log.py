@@ -6,6 +6,8 @@ from astropy.table import Table
 from collections import OrderedDict
 from scipy.optimize import minimize
 import emcee
+import time
+from multiprocessing import Pool
 import corner
 
 # fitting R and M (project 2) R >= 4.4e4 f_in/t_form * M_NSC
@@ -83,8 +85,8 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
     elif not (1 < M_GC_min < 2):
         result = -np.inf
 
-    # most massive ever formed, Norris et al 2015 give limit of ~ 5x10^7
-    elif not (np.log10(gal['M_GC_max']) < M_GC_max < 7.8):
+    # most massive ever formed, Norris et al 2015 give limit of ~ 5x10^7 (default is 7.8)
+    elif not (np.log10(gal['M_GC_max']) < M_GC_max < 8.5):
         result = -np.inf
     # elif not (5 < M_GC_lim < np.log10(gal['M_GC_max'])):  # flat prior on mass
     #    result = -np.inf
@@ -123,7 +125,7 @@ def log_probability(theta,  M_NSC, e_M_NSC, M_GCS, e_M_GCS, galaxy='FCC47', file
 
 
 def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.8, galaxy='FCC47',
-                     file='../Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000):
+                     file='../Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000, parallel=False):
     tab = ascii.read(file)
 
     gal = tab[tab['galaxy'] == galaxy]
@@ -154,11 +156,21 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
 
     pos = initial + 1e-4 * np.random.randn(nwalkers, ndim)
     # nwalkers, ndim = pos.shape
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability,
-                                    args=(M_NSC, e_M_NSC, M_GCS, e_M_GCS, galaxy, file, mass_uncertainty))
-    sampler.run_mcmc(pos, steps)
-    print('Walkers: {0}'.format(nwalkers))
-    print('Steps: {0}'.format(steps))
+    if not parallel:
+
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability,
+                                        args=(M_NSC, e_M_NSC, M_GCS, e_M_GCS, galaxy, file, mass_uncertainty))
+        sampler.run_mcmc(pos, steps)
+        print('Walkers: {0}'.format(nwalkers))
+        print('Steps: {0}'.format(steps))
+    else:
+        with Pool(processes=6) as pool:
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability,
+                                            args=(M_NSC, e_M_NSC, M_GCS, e_M_GCS, galaxy, file, mass_uncertainty), pool=pool)
+            sampler.run_mcmc(pos, steps)
+            print('Walkers: {0}'.format(nwalkers))
+            print('Steps: {0}'.format(steps))
+
     # tau = sampler.get_autocorr_time()
     flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
 
