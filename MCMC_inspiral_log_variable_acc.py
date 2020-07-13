@@ -19,7 +19,7 @@ def calc_vals(theta):
         10, theta[:, 3:].T)
     eta = np.power(10, theta[:, 0])
     M_NSC_acc_m = eta*M_gal_lin*(1-f_acc) * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
-                                             (1+np.log(M_GC_lim_lin/M_GC_min_lin)))
+                                             (1+np.log(M_GC_max_lin/M_GC_min_lin)))
     M_GCS_m = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
         (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
     M_GCS_m = M_GCS_m*(1-f_acc)
