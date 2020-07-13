@@ -14,32 +14,38 @@ import corner
 
 
 def calc_vals(theta):
-    eta, f_in, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta.T
+    eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta.T
     M_gal_lin, M_GC_lim_lin, M_GC_min_lin, M_GC_max_lin, M_GC_diss_lin = np.power(
-        10, theta[:, 2:].T)
+        10, theta[:, 3:].T)
     eta = np.power(10, theta[:, 0])
-    M_NSC_acc_m = eta*M_gal_lin * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
-                                   (1+np.log(M_GC_max_lin/M_GC_min_lin)))
-    M_GCS_m = eta*M_gal_lin - M_NSC_acc_m - M_GC_diss_lin * (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
+    M_NSC_acc_m = eta*M_gal_lin*(1-f_acc) * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
+                                             (1+np.log(M_GC_lim_lin/M_GC_min_lin)))
+    M_GCS_m = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
+        (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
+    M_GCS_m = M_GCS_m*(1-f_acc)
     M_NSC_m = M_NSC_acc_m/(1 - f_in)
     return np.log10(M_NSC_m), np.log10(M_GCS_m)
 
 
 def log_likelihood(theta, M_NSC, e_M_NSC, M_GCS, e_M_GCS):
-    eta, f_in, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta  # log units
+    eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta  # log units
 
     # the main equations
     M_gal_lin, M_GC_lim_lin, M_GC_min_lin, M_GC_max_lin, M_GC_diss_lin = np.power(
-        10, theta[2:])  # to linear units for the calculation
+        10, theta[3:])  # to linear units for the calculation
     eta = np.power(10, theta[0])
+
     # the main equations
-    M_NSC_acc_m = eta*M_gal_lin * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
-                                   (1+np.log(M_GC_max_lin/M_GC_min_lin)))
+
+    M_NSC_acc_m = eta*M_gal_lin*(1-f_acc) * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
+                                             (1+np.log(M_GC_max_lin/M_GC_min_lin)))
     # M_NSC = M_acc + M_insitu,
     # M_insitu = f_in*M_NSC #fraction of total
     # M_NSC = Macc + f_in * M_NSC => M_acc = (1 - f_in)*M_NSC
     M_NSC_m = M_NSC_acc_m/(1 - f_in)
-    M_GCS_m = eta*M_gal_lin - M_NSC_acc_m - M_GC_diss_lin * (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
+    M_GCS_in_m = (eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin *
+                  (1 + np.log(M_GC_diss_lin/M_GC_min_lin)))
+    M_GCS_m = (1 - f_acc)*M_GCS_in_m
     # sigmas
     M_NSC_m = np.log10(M_NSC_m)  # back to log
     M_GCS_m = np.log10(M_GCS_m)
@@ -73,12 +79,14 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
     """
     Priors on the parameters
     """
-    eta, f_in, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta
+    eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta
     # flat priors for eta and f_in and t_form
     tab = ascii.read(file)
     gal = tab[tab['galaxy'] == galaxy]
     result = 0
-    if not (0.00 <= f_in < 1):
+    if not (0.00 < f_in <= 1):
+        result = -np.inf
+    elif not (0.00 < f_acc <= 1):
         result = -np.inf
     elif not (-5 < eta < np.log10(0.5)):
         result = -np.inf
@@ -134,13 +142,14 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
     # initial = np.array([eta_true, f_in_true, np.log10(gal['M_gal'][0]), np.log10(gal['M_GC_max'][0]),
     #                    np.log10(gal['M_GC_min'][0]), np.log10(5e7), np.log10(gal['M_GC_diss'][0])])  # * np.random.randn(1)
     if galaxy == 'FCC47':
-        initial = np.array([-1, 0.9, 10.2, 6.7, 1.5, 7.7, 4.7])  # initial guess for the parameters
+        initial = np.array([-1, 0.9, 0.5, 10.2, 6.7, 1.5, 7.7, 4.7]
+                           )  # initial guess for the parameters
     if galaxy == 'FCC177':
-        initial = np.array([-1, 0.57, 9.6, 6.4, 1.5, 7.7, 4.7])
+        initial = np.array([-1, 0.57, 0.5, 9.6, 6.4, 1.5, 7.7, 4.7])
     if galaxy == 'FCC170':
-        initial = np.array([-1, 0.8, 9.8, 6.8, 1.5, 7.5, 4.7])
+        initial = np.array([-1, 0.8, 0.5, 9.8, 6.8, 1.5, 7.5, 4.7])
     else:
-        initial = np.array([-1, 0.5, np.log10(gal['M_gal'][0]), 6.5, 1.5, 7.5, 4.7])
+        initial = np.array([-1, 0.5, 0.5, np.log10(gal['M_gal'][0]), 6.5, 1.5, 7.5, 4.7])
     # print(initial)
     prob_initial = log_prior(initial, galaxy=galaxy, file=file)
     # print(prob_initial)
@@ -177,7 +186,7 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
     fig, axes = plt.subplots(ndim, figsize=(10, 7), sharex=True)
     samples = sampler.get_chain()
 
-    labels = [r"$\eta$", r'$f_{\rm{in}}$', r'log($M_{\rm{gal}}$)', r'log($M_{\rm{GC, lim}}$)',
+    labels = [r"$\eta$", r'$f_{\rm{in}}$', r'$f_{\rm{acc}}$', r'log($M_{\rm{gal}}$)', r'log($M_{\rm{GC, lim}}$)',
               r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)', r'log($M_{\rm{GC, diss}}$)']
     for i in range(ndim):
         ax = axes[i]
@@ -189,21 +198,22 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
     axes[-1].set_xlabel("step number")
     M_NSC_m, M_GCS_m = calc_vals(flat_samples)
     s = np.shape(flat_samples)
-    to_plot = np.zeros([s[0], 4])
+    to_plot = np.zeros([s[0], 5])
     to_plot[:, 0] = flat_samples[:, 0]
     to_plot[:, 1] = flat_samples[:, 1]
-    to_plot[:, 2] = flat_samples[:, 4]
-    to_plot[:, 3] = flat_samples[:, 5]
+    to_plot[:, 2] = flat_samples[:, 2]
+    to_plot[:, 3] = flat_samples[:, 4]
+    to_plot[:, 4] = flat_samples[:, 5]
     # to_plot[:, -2] = M_NSC_m
     # to_plot[:, -1] = M_GCS_m
 
-    labels_full = [r"log($\eta$)", r'$f_{\rm{in}}$', r'log($M_{\rm{gal}}$)', r'log($M_{\rm{GC, lim}}$)',
+    labels_full = [r"log($\eta$)", r'$f_{\rm{in}}$', r'$f_{\rm{acc}}$', r'log($M_{\rm{gal}}$)', r'log($M_{\rm{GC, lim}}$)',
                    r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)', r'log($M_{\rm{GC, diss}}$)']
     fig = corner.corner(flat_samples, labels=labels_full, truths=None, quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": 12}, label_kwargs={'fontsize': 12})
     fig.savefig('./plots/{0}_corner{1}.png'.format(galaxy, prefix), dpi=300)
 
-    labels = [r"log($\eta$)", r'$f_{\rm{in}}$',
+    labels = [r"log($\eta$)", r'$f_{\rm{in}}$', r'$f_{\rm{acc}}$',
               r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)']
     fig = corner.corner(to_plot, labels=labels, truths=None, quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": 14}, label_kwargs={'fontsize': 14}, title_fmt='.1f')
@@ -217,7 +227,7 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
         results.append(np.round(q[1], 4))
         results.append(np.round(q[0], 4))
     results = np.array(results)
-    names = ["eta", "eta_p", 'eta_m', 'f_in', 'f_in_p', 'f_in_m', 'M_gal', 'M_gal_p', 'M_gal_m',
+    names = ["eta", "eta_p", 'eta_m', 'f_in', 'f_in_p', 'f_in_m', 'f_acc', 'f_acc_p', 'f_acc_m', 'M_gal', 'M_gal_p', 'M_gal_m',
              'M_GC_lim', 'M_GC_lim_p', 'M_GC_lim_m', 'M_cl_min', 'M_cl_min_p', 'M_cl_min_m',
              'M_cl_max', 'M_cl_max_p', 'M_cl_max_m', 'M_GC_diss', 'M_GC_diss_p', 'M_GC_diss_m']
 

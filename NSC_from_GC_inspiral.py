@@ -1,15 +1,13 @@
-"""
-Project 2 in Ryan's presentation
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt  # plotting
 from astropy.io import ascii  # for table handling
 from MCMC_inspiral_log import do_the_modelling as do_the_modelling_log
-from MCMC_inspiral_log import log_likelihood
+from MCMC_inspiral_log_variable_acc import do_the_modelling as do_the_modelling_log_var_acc
 import os
 import time
 import warnings
+import matplotlib
+matplotlib.use('Agg')
 warnings.filterwarnings('ignore')
 
 
@@ -42,15 +40,19 @@ def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_unce
     tab = ascii.read(file)
 
     gal = tab[tab['galaxy'] == galaxy]
-    print(file)
+
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
     do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
                          np.log10(gal['M_GCS']), mass_uncertainty,
                          galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel)
+    do_the_modelling_log_var_acc(np.log10(gal['M_NSC']), mass_uncertainty,
+                                 np.log10(gal['M_GCS']), mass_uncertainty,
+                                 galaxy=galaxy, file=file, prefix=prefix+'_acc', steps=steps, parallel=parallel)
 
     # except:
     ##    print('Did not work for {0}'.format(galaxy))
     # return 0
+
 
 def convert_seconds(t):
     hours = int(t/3600)
@@ -64,28 +66,29 @@ if __name__ == "__main__":
     plt.close('all')
 
     #galaxy = 'FCC204'
-    tab = ascii.read('./Data/Cote2006_NSCs_Virgo.txt')
+
     # for galaxy in tab['Name']:
     #    do_for_galaxy(galaxy)
-    #    plt.close()
-    #plt.show()
+    #    plt.close()s
+    # plt.show()
     start = time.time()
-    #tab = ascii.read('./Data/Turner2012_NSCs_Fornax.txt')
-    for galaxy in tab['Name']:
-        if galaxy != 'FCC95':
-            start_i = time.time()
-            do_for_galaxy(galaxy, file='./Data/ACSVCS_sample.dat',  prefix='_M_GC_max', steps=1000, parallel=1, redo=0)
-            plt.close("all")
-            end_i = time.time()
-            duration_i = end_i-start_i
-            print('This took {0}'.format( convert_seconds(duration_i)))
+    file = './Data/ACS_sample_to_fit2.dat'
+    tab = ascii.read(file)
+    for galaxy in ['FCC47']:
+        start_i = time.time()
+        do_for_galaxy(galaxy, file=file,
+                      prefix='', steps=1000, parallel=1, redo=0)
+        plt.close("all")
+        end_i = time.time()
+        duration_i = end_i-start_i
+        print('This took {0}'.format(convert_seconds(duration_i)))
     end_i = time.time()
     duration_i = end_i-start
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-    print('This took {0}'.format( convert_seconds(duration_i)))
+    print('This took {0}'.format(convert_seconds(duration_i)))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     #tab = ascii.read('./Data/Turner2012_NSCs_Fornax.txt')
-    #for galaxy in tab['Name']:
+    # for galaxy in tab['Name']:
     #    do_for_galaxy(galaxy, file='./Data/ACSVCS_sample_2nd_brightest.dat',  prefix='_2nd_brightest', steps=1000)
     #    plt.close("all")
 
