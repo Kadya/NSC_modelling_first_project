@@ -201,13 +201,13 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
                    r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)', r'log($M_{\rm{GC, diss}}$)']
     fig = corner.corner(flat_samples, labels=labels_full, truths=None, quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": 12}, label_kwargs={'fontsize': 12})
-    fig.savefig('./plots/{0}_corner{1}.png'.format(galaxy, prefix), dpi=300)
+    fig.savefig('./Plots/{0}_corner{1}.png'.format(galaxy, prefix), dpi=300)
 
     labels = [r"log($\eta$)", r'$f_{\rm{in}}$',
               r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)']
     fig = corner.corner(to_plot, labels=labels, truths=None, quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": 14}, label_kwargs={'fontsize': 14}, title_fmt='.1f')
-    fig.savefig('./plots/{0}_corner{1}_for_paper.png'.format(galaxy, prefix), dpi=300)
+    fig.savefig('./Plots/{0}_corner{1}_for_paper.png'.format(galaxy, prefix), dpi=300)
 
     results = []
     for i in range(ndim):
