@@ -30,7 +30,7 @@ def convert_to_log(val, e_val):
     return log_val, log_e_val
 
 
-def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000, parallel=False):
+def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_uncertainty=0.3, prefix='', steps=1000, parallel=False, cores=6):
     if os.path.isfile('./Results/{0}_results{1}.dat'.format(galaxy, prefix)) and not redo:
         print('done already')
 
@@ -44,10 +44,10 @@ def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_unce
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
     do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
                          np.log10(gal['M_GCS']), mass_uncertainty,
-                         galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel)
+                         galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
     do_the_modelling_log_var_acc(np.log10(gal['M_NSC']), mass_uncertainty,
                                  np.log10(gal['M_GCS']), mass_uncertainty,
-                                 galaxy=galaxy, file=file, prefix=prefix+'_acc', steps=steps, parallel=parallel)
+                                 galaxy=galaxy, file=file, prefix=prefix+'_acc', steps=steps, parallel=parallel, cores=cores)
 
     # except:
     ##    print('Did not work for {0}'.format(galaxy))
