@@ -74,10 +74,11 @@ if __name__ == "__main__":
     start = time.time()
     file = './Data/ACS_sample_to_fit2.dat'
     tab = ascii.read(file)
+    prefix = 'M_GC_max_2nd'
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
-                      prefix='', steps=1000, parallel=1, redo=0, cores=10)
+                      prefix=prefix, steps=1000, parallel=1, redo=0, cores=10)
         plt.close("all")
         end_i = time.time()
         duration_i = end_i-start_i
