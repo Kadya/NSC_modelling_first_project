@@ -77,7 +77,7 @@ if __name__ == "__main__":
     for galaxy in ['FCC47']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
-                      prefix='', steps=1000, parallel=1, redo=0)
+                      prefix='', steps=1000, parallel=1, redo=0, cores=10)
         plt.close("all")
         end_i = time.time()
         duration_i = end_i-start_i
