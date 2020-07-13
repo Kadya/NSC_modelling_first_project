@@ -74,7 +74,7 @@ if __name__ == "__main__":
     start = time.time()
     file = './Data/ACS_sample_to_fit2.dat'
     tab = ascii.read(file)
-    for galaxy in ['FCC47']:
+    for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
                       prefix='', steps=1000, parallel=1, redo=0, cores=10)
