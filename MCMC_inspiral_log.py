@@ -99,7 +99,7 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
         # prior_M_GC_lim = simple_gauss(
         #    M_GC_lim, *convert_to_log(gal['M_GC_max'], gal['e_M_GC_max']))  # max GC today
         prior_M_GC_lim = simple_gauss(
-            M_GC_lim, np.log10(gal['M_GC_lim']), mass_uncertainty)  # max GC today
+            M_GC_lim, np.log10(gal['M_GC_max_2nd']), mass_uncertainty)  # max GC today
 
         prior_M_GC_diss = simple_gauss(
             M_GC_diss, np.log10(gal['M_GC_min']), mass_uncertainty)  # diss: min GC today

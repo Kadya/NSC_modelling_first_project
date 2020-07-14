@@ -74,7 +74,7 @@ if __name__ == "__main__":
     start = time.time()
     file = './Data/ACS_sample_to_fit2.dat'
     tab = ascii.read(file)
-    prefix = '_M_GC_lim'
+    prefix = '_M_GC_max_2nd'
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
