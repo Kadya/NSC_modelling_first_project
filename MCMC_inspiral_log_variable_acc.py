@@ -27,6 +27,20 @@ def calc_vals(theta):
     return np.log10(M_NSC_m), np.log10(M_GCS_m)
 
 
+def calc_vals_simple(theta):
+    eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta
+    M_gal_lin, M_GC_lim_lin, M_GC_min_lin, M_GC_max_lin, M_GC_diss_lin = np.power(
+        10, theta[3:])
+    eta = np.power(10, theta[0])
+    M_NSC_acc_m = eta*M_gal_lin*(1-f_acc) * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
+                                             (1+np.log(M_GC_max_lin/M_GC_min_lin)))
+    M_GCS_m = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
+        (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
+    M_GCS_m = M_GCS_m*(1-f_acc)
+    M_NSC_m = M_NSC_acc_m/(1 - f_in)
+    return np.log10(M_NSC_m), np.log10(M_GCS_m)
+
+
 def log_likelihood(theta, M_NSC, e_M_NSC, M_GCS, e_M_GCS):
     eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta  # log units
 
@@ -75,6 +89,26 @@ def convert_to_log(val, e_val):
     return log_val, log_e_val
 
 
+def calc_f_in_lims(theta):
+    eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta
+    M_gal_lin, M_GC_lim_lin, M_GC_min_lin, M_GC_max_lin, M_GC_diss_lin = np.power(
+        10, theta[3:])
+    eta = np.power(10, theta[0])
+    # if not (0.00 < f_in <= 1):
+    #    result = -np.inf
+    M_NSC, M_GCS = calc_vals_simple(theta)
+    M_NSC_lin, M_GCS_lin = np.power(10, M_NSC), np.power(10, M_GCS)
+
+    f_in_lower_limit = 1 - ((eta*((1-f_acc)**2)*M_gal_lin*M_GCS_lin) /
+                            (M_NSC_lin*M_GC_lim_lin*(1+np.log(M_GC_lim_lin/M_GC_diss_lin))))
+    f_in_upper_limit = 1 - ((M_GC_lim_lin*M_GCS_lin)/(eta*M_gal_lin*M_NSC_lin))
+    if f_in_lower_limit < 0:
+        f_in_lower_limit = 0
+    if f_in_upper_limit > 1:
+        f_in_upper_limit = 1
+    return f_in_lower_limit, f_in_upper_limit
+
+
 def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_uncertainty=0.3):
     """
     Priors on the parameters
@@ -84,7 +118,10 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
     tab = ascii.read(file)
     gal = tab[tab['galaxy'] == galaxy]
     result = 0
-    if not (0.00 < f_in <= 1):
+
+    f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta)
+
+    if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
         result = -np.inf
     elif not (0.00 < f_acc <= 1):
         result = -np.inf
@@ -94,7 +131,7 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
         result = -np.inf
 
     # most massive ever formed, Norris et al 2015 give limit of ~ 5x10^7 (default is 7.8)
-    elif not (np.log10(gal['M_GC_max']) < M_GC_max < 8.8):
+    elif not (np.log10(gal['M_GC_max']) < M_GC_max < 7.8):
         result = -np.inf
     # elif not (5 < M_GC_lim < np.log10(gal['M_GC_max'])):  # flat prior on mass
     #    result = -np.inf

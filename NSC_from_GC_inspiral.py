@@ -3,11 +3,13 @@ import matplotlib.pyplot as plt  # plotting
 from astropy.io import ascii  # for table handling
 from MCMC_inspiral_log import do_the_modelling as do_the_modelling_log
 from MCMC_inspiral_log_variable_acc import do_the_modelling as do_the_modelling_log_var_acc
+from MCMC_inspiral_log_variable_acc import calc_vals_simple
 import os
 import time
 import warnings
 import matplotlib
-matplotlib.use('Agg')
+
+# matplotlib.use('Agg')
 warnings.filterwarnings('ignore')
 
 
@@ -42,12 +44,12 @@ def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_unce
     gal = tab[tab['galaxy'] == galaxy]
 
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
-    do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
-                         np.log10(gal['M_GCS']), mass_uncertainty,
-                         galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
+    # do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
+    #                     np.log10(gal['M_GCS']), mass_uncertainty,
+    #                     galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
     do_the_modelling_log_var_acc(np.log10(gal['M_NSC']), mass_uncertainty,
                                  np.log10(gal['M_GCS']), mass_uncertainty,
-                                 galaxy=galaxy, file=file, prefix=prefix+'_acc', steps=steps, parallel=parallel, cores=cores)
+                                 galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
 
     # except:
     ##    print('Did not work for {0}'.format(galaxy))
@@ -62,6 +64,27 @@ def convert_seconds(t):
     return string
 
 
+def calc_f_in_lims(theta):
+    eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta
+    M_gal_lin, M_GC_lim_lin, M_GC_min_lin, M_GC_max_lin, M_GC_diss_lin = np.power(
+        10, theta[3:])
+    eta = np.power(10, theta[0])
+    # if not (0.00 < f_in <= 1):
+    #    result = -np.inf
+    M_NSC, M_GCS = calc_vals_simple(theta)
+
+    M_NSC_lin, M_GCS_lin = np.power(10, M_NSC), np.power(10, M_GCS)
+
+    f_in_lower_limit = 1 - ((eta*((1-f_acc)**2)*M_gal_lin*M_GCS_lin) /
+                            (M_NSC_lin*M_GC_lim_lin*(1+np.log(M_GC_lim_lin/M_GC_diss_lin))))
+    f_in_upper_limit = 1 - ((M_GC_lim_lin*M_GCS_lin)/(eta*M_gal_lin*M_NSC_lin))
+    if f_in_lower_limit < 0:
+        f_in_lower_limit = 0
+    if f_in_upper_limit > 1:
+        f_in_upper_limit = 1
+    return f_in_lower_limit, f_in_upper_limit
+
+
 if __name__ == "__main__":
     plt.close('all')
 
@@ -74,7 +97,7 @@ if __name__ == "__main__":
     start = time.time()
     file = './Data/ACS_sample_to_fit2.dat'
     tab = ascii.read(file)
-    prefix = '_M_GC_max'
+    prefix = '_acc_varlim'
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
@@ -88,6 +111,7 @@ if __name__ == "__main__":
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     print('This took {0}'.format(convert_seconds(duration_i)))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
     #tab = ascii.read('./Data/Turner2012_NSCs_Fornax.txt')
     # for galaxy in tab['Name']:
     #    do_for_galaxy(galaxy, file='./Data/ACSVCS_sample_2nd_brightest.dat',  prefix='_2nd_brightest', steps=1000)

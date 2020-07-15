@@ -86,7 +86,7 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
         result = -np.inf
 
     # most massive ever formed, Norris et al 2015 give limit of ~ 5x10^7 (default is 7.8)
-    elif not (np.log10(gal['M_GC_max']) < M_GC_max < 8.8):
+    elif not (np.log10(gal['M_GC_max']) < M_GC_max < 7.8):
         result = -np.inf
     # elif not (5 < M_GC_lim < np.log10(gal['M_GC_max'])):  # flat prior on mass
     #    result = -np.inf
