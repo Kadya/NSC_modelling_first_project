@@ -44,12 +44,12 @@ def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_unce
     gal = tab[tab['galaxy'] == galaxy]
 
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
-    do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
-                         np.log10(gal['M_GCS']), mass_uncertainty,
-                         galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
-    # do_the_modelling_log_var_acc(np.log10(gal['M_NSC']), mass_uncertainty,
-    #                             np.log10(gal['M_GCS']), mass_uncertainty,
-    #                             galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
+    #do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
+    #                     np.log10(gal['M_GCS']), mass_uncertainty,
+    #                     galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
+    do_the_modelling_log_var_acc(np.log10(gal['M_NSC']), mass_uncertainty,
+                                 np.log10(gal['M_GCS']), mass_uncertainty,
+                                 galaxy=galaxy, file=file, prefix=prefix+'_acc', steps=steps, parallel=parallel, cores=cores)
 
     # except:
     ##    print('Did not work for {0}'.format(galaxy))
@@ -95,7 +95,8 @@ if __name__ == "__main__":
     #    plt.close()s
     # plt.show()
     start = time.time()
-    file = './Data/ACS_sample_to_fit3.dat'
+    file = './Data/LocalVolume_sample_to_fit2.dat'
+    #file = './Data/ACS_sample_to_fit3.dat'
     tab = ascii.read(file)
     prefix = '_M_GC_lim'
     for galaxy in tab['galaxy']:
