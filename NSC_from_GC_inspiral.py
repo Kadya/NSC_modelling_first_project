@@ -105,7 +105,7 @@ if __name__ == "__main__":
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
-                      prefix=prefix, steps=1000, parallel=1, redo=1, cores=7)
+                      prefix=prefix, steps=1000, parallel=1, redo=1, cores=10)
         plt.close("all")
         end_i = time.time()
         duration_i = end_i-start_i

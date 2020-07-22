@@ -60,7 +60,7 @@ def log_likelihood(theta, M_NSC, e_M_NSC, M_GCS, e_M_GCS):
     M_NSC_m = M_NSC_acc_m/(1 - f_in)
     M_GCS_in_m = (eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin *
                   (1 + np.log(M_GC_diss_lin/M_GC_min_lin)))
-    M_GCS_m = (1 - f_acc)*M_GCS_in_m
+    M_GCS_m = M_GCS_in_m/(1 - f_acc)
     # sigmas
     M_NSC_m = np.log10(M_NSC_m)  # back to log
     M_GCS_m = np.log10(M_GCS_m)
