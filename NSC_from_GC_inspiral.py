@@ -10,7 +10,7 @@ import warnings
 import matplotlib
 import pandas as pd
 
-# matplotlib.use('Agg')
+matplotlib.use('Agg')
 warnings.filterwarnings('ignore')
 
 
