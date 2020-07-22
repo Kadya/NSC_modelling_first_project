@@ -20,9 +20,10 @@ def calc_vals(theta):
     eta = np.power(10, theta[:, 0])
     M_NSC_acc_m = eta*M_gal_lin*(1-f_acc) * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
                                              (1+np.log(M_GC_max_lin/M_GC_min_lin)))
-    M_GCS_m = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
+    M_GCS_in = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
         (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
-    M_GCS_m = M_GCS_m*(1-f_acc)
+    M_GCS_m = M_GCS_in/(1-f_acc)
+
     M_NSC_m = M_NSC_acc_m/(1 - f_in)
     return np.log10(M_NSC_m), np.log10(M_GCS_m)
 
@@ -34,9 +35,9 @@ def calc_vals_simple(theta):
     eta = np.power(10, theta[0])
     M_NSC_acc_m = eta*M_gal_lin*(1-f_acc) * ((1+np.log(M_GC_max_lin/M_GC_lim_lin)) /
                                              (1+np.log(M_GC_max_lin/M_GC_min_lin)))
-    M_GCS_m = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
+    M_GCS_in = eta*M_gal_lin*(1-f_acc) - M_NSC_acc_m - M_GC_diss_lin * \
         (1 + np.log(M_GC_diss_lin/M_GC_min_lin))
-    M_GCS_m = M_GCS_m*(1-f_acc)
+    M_GCS_m = M_GCS_in/(1-f_acc)
     M_NSC_m = M_NSC_acc_m/(1 - f_in)
     return np.log10(M_NSC_m), np.log10(M_GCS_m)
 
@@ -121,8 +122,8 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
 
     #f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta)
 
-    #if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
-    if not (0 <= f_in <= 1):    
+    # if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
+    if not (0 <= f_in <= 1):
         result = -np.inf
     elif not (0.00 < f_acc <= 1):
         result = -np.inf

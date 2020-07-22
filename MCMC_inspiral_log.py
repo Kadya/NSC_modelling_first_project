@@ -10,6 +10,7 @@ import time
 from multiprocessing import Pool
 import corner
 
+import seaborn as sns
 # fitting R and M (project 2) R >= 4.4e4 f_in/t_form * M_NSC
 
 
@@ -99,7 +100,7 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
         # prior_M_GC_lim = simple_gauss(
         #    M_GC_lim, *convert_to_log(gal['M_GC_max'], gal['e_M_GC_max']))  # max GC today
         prior_M_GC_lim = simple_gauss(
-            M_GC_lim, np.log10(gal['M_GC_lim']), mass_uncertainty)  # max GC today
+            M_GC_lim, np.log10(gal['M_GC_max']), mass_uncertainty)  # max GC today
 
         prior_M_GC_diss = simple_gauss(
             M_GC_diss, np.log10(gal['M_GC_min']), mass_uncertainty)  # diss: min GC today
@@ -199,14 +200,18 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
 
     labels_full = [r"log($\eta$)", r'$f_{\rm{in}}$', r'log($M_{\rm{gal}}$)', r'log($M_{\rm{GC, lim}}$)',
                    r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)', r'log($M_{\rm{GC, diss}}$)']
+
     fig = corner.corner(flat_samples, labels=labels_full, truths=None, quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": 12}, label_kwargs={'fontsize': 12})
-    fig.savefig('./Plots/{0}_corner{1}.png'.format(galaxy, prefix), dpi=300)
+    fig.set_size_inches(6.5, 6.5)
+    plt.tight_layout()
+    fig.savefig('./Plots/{0}_corner{1}.png'.format(galaxy, prefix), dpi=300, bbox_inches='tight')
 
-    labels = [r"log($\eta$)", r'$f_{\rm{in}}$',
+    labels = [r"log($\eta$)", r'$f_{\rm{in, NSC}}$',
               r'log($M_{\rm{cl, min}}$)', r'log($M_{\rm{cl, max}}$)']
     fig = corner.corner(to_plot, labels=labels, truths=None, quantiles=[0.16, 0.5, 0.84],
                         show_titles=True, title_kwargs={"fontsize": 14}, label_kwargs={'fontsize': 14}, title_fmt='.1f')
+    # sns.despine(fig=fig)
     fig.savefig('./Plots/{0}_corner{1}_for_paper.png'.format(galaxy, prefix), dpi=300)
 
     results = []

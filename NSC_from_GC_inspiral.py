@@ -8,6 +8,7 @@ import os
 import time
 import warnings
 import matplotlib
+import pandas as pd
 
 # matplotlib.use('Agg')
 warnings.filterwarnings('ignore')
@@ -44,7 +45,7 @@ def do_for_galaxy(galaxy, redo=False, file='./Data/ACSFCS_sample.dat', mass_unce
     gal = tab[tab['galaxy'] == galaxy]
 
     print('%%%%%%%%%%%%%%%%%%%%%% {0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%'.format(galaxy))
-    #do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
+    # do_the_modelling_log(np.log10(gal['M_NSC']), mass_uncertainty,
     #                     np.log10(gal['M_GCS']), mass_uncertainty,
     #                     galaxy=galaxy, file=file, prefix=prefix, steps=steps, parallel=parallel, cores=cores)
     do_the_modelling_log_var_acc(np.log10(gal['M_NSC']), mass_uncertainty,
@@ -95,10 +96,12 @@ if __name__ == "__main__":
     #    plt.close()s
     # plt.show()
     start = time.time()
-    file = './Data/LocalVolume_sample_to_fit2.dat'
-    #file = './Data/ACS_sample_to_fit3.dat'
+    #file = './Data/LocalVolume_sample_to_fit2.dat'
+    file = './Data/ACS_sample_to_fit3.dat'
+    tab = ascii.read(file).to_pandas()
+
     tab = ascii.read(file)
-    prefix = '_M_GC_lim'
+    prefix = '_M_GC_max'
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
