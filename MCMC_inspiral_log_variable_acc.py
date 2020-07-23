@@ -9,6 +9,7 @@ import emcee
 import time
 from multiprocessing import Pool
 import corner
+from Accreted_fracs_from_sims import get_value_for_mass_lims
 
 # fitting R and M (project 2) R >= 4.4e4 f_in/t_form * M_NSC
 
@@ -121,11 +122,12 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
     result = 0
 
     f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta)
+    f_acc_m, f_acc_p = get_value_for_mass_lims(M_gal)
 
     if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
         # if not (0 <= f_in <= 1):
         result = -np.inf
-    elif not (0.00 < f_acc <= 1):
+    elif not (f_acc_m < f_acc <= f_acc_p):
         result = -np.inf
     elif not (-5 < eta < np.log10(0.5)):
         result = -np.inf

@@ -9,6 +9,7 @@ import time
 import warnings
 import matplotlib
 import pandas as pd
+from Accreted_fracs_from_sims import get_value_for_mass
 
 matplotlib.use('Agg')
 warnings.filterwarnings('ignore')
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     tab = ascii.read(file).to_pandas()
 
     tab = ascii.read(file)
-    prefix = '_var'
+    prefix = '_facc_lim'
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
