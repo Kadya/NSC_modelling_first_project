@@ -9,7 +9,7 @@ import emcee
 import time
 from multiprocessing import Pool
 import corner
-from Accreted_fracs_from_sims import get_value_for_mass_lims
+from Accreted_fracs_from_sims import get_value_for_mass_lims, get_value_for_mass
 
 # fitting R and M (project 2) R >= 4.4e4 f_in/t_form * M_NSC
 
@@ -182,15 +182,17 @@ def do_the_modelling(M_NSC, e_M_NSC, M_GCS, e_M_GCS, eta_true=0.05, f_in_true=0.
     nll = lambda *args: -log_likelihood(*args)
     # initial = np.array([eta_true, f_in_true, np.log10(gal['M_gal'][0]), np.log10(gal['M_GC_max'][0]),
     #                    np.log10(gal['M_GC_min'][0]), np.log10(5e7), np.log10(gal['M_GC_diss'][0])])  # * np.random.randn(1)
+    f_acc = get_value_for_mass(np.log10(gal['M_gal'][0]))
+    print('f_acc = {0}'.format(f_acc))
     if galaxy == 'FCC47':
-        initial = np.array([-1, 0.9, 0.5, 10.2, 6.7, 1.5, 7.7, 4.7]
+        initial = np.array([-1, 0.9, f_acc, 10.2, 6.7, 1.5, 7.7, 4.7]
                            )  # initial guess for the parameters
     if galaxy == 'FCC177':
-        initial = np.array([-1, 0.57, 0.5, 9.6, 6.4, 1.5, 7.7, 4.7])
+        initial = np.array([-1, 0.57, f_acc, 9.6, 6.4, 1.5, 7.7, 4.7])
     if galaxy == 'FCC170':
-        initial = np.array([-1, 0.8, 0.5, 9.8, 6.8, 1.5, 7.5, 4.7])
+        initial = np.array([-1, 0.8, f_acc, 9.8, 6.8, 1.5, 7.5, 4.7])
     else:
-        initial = np.array([-1, 0.5, 0.5, np.log10(gal['M_gal'][0]), 6.5, 1.5, 7.5, 4.7])
+        initial = np.array([-1, 0.5, f_acc, np.log10(gal['M_gal'][0]), 6.5, 1.5, 7.5, 4.7])
     # print(initial)
     prob_initial = log_prior(initial, galaxy=galaxy, file=file)
     # print(prob_initial)
