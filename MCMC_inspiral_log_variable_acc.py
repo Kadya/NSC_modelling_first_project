@@ -120,10 +120,10 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
     gal = tab[tab['galaxy'] == galaxy]
     result = 0
 
-    #f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta)
+    f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta)
 
-    # if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
-    if not (0 <= f_in <= 1):
+    if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
+        # if not (0 <= f_in <= 1):
         result = -np.inf
     elif not (0.00 < f_acc <= 1):
         result = -np.inf
