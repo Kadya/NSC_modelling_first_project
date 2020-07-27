@@ -91,19 +91,21 @@ def convert_to_log(val, e_val):
     return log_val, log_e_val
 
 
-def calc_f_in_lims(theta):
+def calc_f_in_lims(theta, M_NSC_lin, M_GCS_lin):
     eta, f_in, f_acc, M_gal, M_GC_lim, M_GC_min, M_GC_max, M_GC_diss = theta
     M_gal_lin, M_GC_lim_lin, M_GC_min_lin, M_GC_max_lin, M_GC_diss_lin = np.power(
         10, theta[3:])
     eta = np.power(10, theta[0])
     # if not (0.00 < f_in <= 1):
     #    result = -np.inf
-    M_NSC, M_GCS = calc_vals_simple(theta)
-    M_NSC_lin, M_GCS_lin = np.power(10, M_NSC), np.power(10, M_GCS)
 
     f_in_lower_limit = 1 - ((eta*((1-f_acc)**2)*M_gal_lin*M_GCS_lin) /
                             (M_NSC_lin*M_GC_lim_lin*(1+np.log(M_GC_lim_lin/M_GC_diss_lin))))
+
     f_in_upper_limit = 1 - ((M_GC_lim_lin*M_GCS_lin)/(eta*M_gal_lin*M_NSC_lin))
+
+    # f_in_exp = (eta*M_gal_lin*M_GCS_lin*(1-f_acc)**2* ((1 + np.log(M_GC_max_lin/M_GC_lim_lin))/(1 + np.log(M_GC_lim_lin/M_GC_lim_lin)) )
+
     if f_in_lower_limit < 0:
         f_in_lower_limit = 0
     if f_in_upper_limit > 1:
@@ -121,11 +123,11 @@ def log_prior(theta, galaxy='FCC47', file='../Data/ACSVCS_sample.dat', mass_unce
     gal = tab[tab['galaxy'] == galaxy]
     result = 0
 
-    #f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta)
-    f_acc_m, f_acc_p = get_value_for_mass_lims(M_gal)
-
-    # if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
-    if not (0 <= f_in <= 1):
+    f_in_lower_limit, f_in_upper_lim = calc_f_in_lims(theta, gal['M_NSC'][0], gal['M_GCS'][0])
+    f_acc_m, f_acc_p = 0, 1  # get_value_for_mass_lims(M_gal)
+    # f_acc_m, f_acc_p = 0, 1 =
+    if not (f_in_lower_limit <= f_in <= f_in_upper_lim):
+        # if not (0 <= f_in <= 1):
         result = -np.inf
     elif not (f_acc_m < f_acc <= f_acc_p):
         result = -np.inf

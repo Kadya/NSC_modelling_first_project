@@ -102,7 +102,7 @@ if __name__ == "__main__":
     tab = ascii.read(file).to_pandas()
 
     tab = ascii.read(file)
-    prefix = '_facc_lim'
+    prefix = '_var_acc'
     for galaxy in tab['galaxy']:
         start_i = time.time()
         do_for_galaxy(galaxy, file=file,
